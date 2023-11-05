@@ -54,3 +54,4 @@ The following image shows the web application's appearance and functionality:
 
 
 ## Deployed Link 
+https://manjotpadda13.github.io/Paddaweathernetwork/
