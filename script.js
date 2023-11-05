@@ -17,7 +17,7 @@ function FormatDay(date){
 
 
 
-//Calling function init();
+
 init();
 
 //Function init();
@@ -82,7 +82,7 @@ function renderCities() {
     }
     //Adding city-input to the city array
     cities.push(city);
-    // Store updated cities in localStorage, re-render the list
+   
   storeCities();
   renderCities();
   });
@@ -92,7 +92,7 @@ function renderCities() {
   function getResponseWeather(cityName){
     var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" +cityName+ "&appid=" + key; 
 
-    //Clear content of today-weather
+    // The content of today-weather
     $("#today-weather").empty();
     $.ajax({
       url: queryURL,
@@ -112,34 +112,8 @@ function renderCities() {
       var CoordLon = response.coord.lon;
       var CoordLat = response.coord.lat;
     
-        //Api to get UV index
-        var queryURL2 = "https://api.openweathermap.org/data/2.5/uvi?appid="+ key+ "&lat=" + CoordLat +"&lon=" + CoordLon;
-        $.ajax({
-            url: queryURL2,
-            method: "GET"
-        }).then(function(responseuv) {
-            var cityUV = $("<span>").text(responseuv.value);
-            var cityUVp = $("<p>").text("UV Index: ");
-            cityUVp.append(cityUV);
-            $("#today-weather").append(cityUVp);
-            console.log(typeof responseuv.value);
-            if(responseuv.value > 0 && responseuv.value <=2){
-                cityUV.attr("class","green")
-            }
-            else if (responseuv.value > 2 && responseuv.value <= 5){
-                cityUV.attr("class","yellow")
-            }
-            else if (responseuv.value >5 && responseuv.value <= 7){
-                cityUV.attr("class","orange")
-            }
-            else if (responseuv.value >7 && responseuv.value <= 10){
-                cityUV.attr("class","red")
-            }
-            else{
-                cityUV.attr("class","purple")
-            }
-        });
-    
+       
+       
         //Api to get 5-day forecast  
         var queryURL3 = "https://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&appid=" + key;
             $.ajax({
