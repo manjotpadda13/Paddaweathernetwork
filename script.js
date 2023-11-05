@@ -1,178 +1,125 @@
-var cityList =$("#city-list");
-var cities = [];
-var key = "fc8bffadcdca6a94d021c093eac22797";
+var searchFormEl = document.querySelector('#search-city');
+var resultTextEl = document.querySelector('#currentCityName');
+var currentCityName;
+var APIkey = '23b89ccd37ecfa0524d0c35eae3690f8';
+var weather = [];
+var cityList = [];
 
-//Format for day
-function FormatDay(date){
-    var date = new Date();
-    console.log(date);
-    var month = date.getMonth()+1;
-    var day = date.getDate();
-    
-    var dayOutput = date.getFullYear() + '/' +
-        (month<10 ? '0' : '') + month + '/' +
-        (day<10 ? '0' : '') + day;
-    return dayOutput;
-}
-
-
-
-
-init();
-
-//Function init();
-function init(){
-    //Get stored cities from localStorage
-   
-    var storedCities = JSON.parse(localStorage.getItem("cities"));
-
-    // If cities were retrieved from localStorage, update the cities array to it
-    if (storedCities !== null) {
-        cities = storedCities;
-      }
-    // Render cities to the DOM
-    renderCities();
-    // console.log(cities);
-}
-
-//Function StoreCities()
-function storeCities(){
-   // Stringify and set "cities" key in localStorage to cities array
-  localStorage.setItem("cities", JSON.stringify(cities));
-  console.log(localStorage);
-}
-
-//Function renderCities()
-function renderCities() {
-    // Clear cityList element
-    // cityList.text = "";
-    // cityList.HTML = "";
-    cityList.empty();
-    
-    // Render a new li for each city
-    for (var i = 0; i < cities.length; i++) {
-      var city = cities[i];
-      
-      var li = $("<li>").text(city);
-      li.attr("id","listC");
-      li.attr("data-city", city);
-      li.attr("class", "list-group-item");
-      console.log(li);
-      cityList.prepend(li);
+function displayWeather(weather) {  //updates the weather information for the various IDs
+    $("#day0-wind").text(weather[0].wind);
+    $("#day0-UV").text(weather[0].UV);
+    $(`#currentCityName`).text(currentCityName);
+    if (weather[0].UV >= 11) {varUV = `Violet`}; // Extreme
+    if (weather[0].UV < 11) {varUV = `Red`}; // Very High
+    if (weather[0].UV < 8) {varUV = `Orange`}; // High
+    if (weather[0].UV < 6) {varUV = `Yellow`}; // Moderate
+    if (weather[0].UV < 3) {varUV = `Green`}; // Low
+    $(`#day0-UV`).css( "background-color", varUV);
+    for (var i = 0; i <= 5; i++) {
+        $(`#day`+i+`-temp`).text(weather[i].temp);
+        $(`#day`+i+`-icon`).html(weather[i].icon);
+        $(`#day`+i+`-hum`).text(weather[i].hum);
+        $(`#day`+i+`-date`).html(weather[i].date);
+        $(`#day`+i+`-icon`).attr("src",weather[i].icon);
     }
-    //Get Response weather for the first city only
-    if (!city){
-        return
-    } 
-    else{
-        getResponseWeather(city)
-    };
-}   
+}
 
-  //When form is submitted...
-  $("#add-city").on("click", function(event){
-      event.preventDefault();
-
-    // This line will grab the city from the input box
-    var city = $("#city-input").val().trim();
-    
-    // Return from function early if submitted city is blank
-    if (city === "") {
-        return;
+function showCityList(cityList) {  //displays the list of cities chosen in the past
+    var varText = "";
+    for (var i = 0; i < cityList.length; i++) {
+      varText += `<li class="btn list-group-item list-group-item-action d-flex justify-content-between align-items-center" onclick="searchApi('`+cityList[i]+`')">`+cityList[i]+`</li>`;
     }
-    //Adding city-input to the city array
-    cities.push(city);
-   
-  storeCities();
-  renderCities();
-  });
+    $(`#cityListGroup`).html(varText);
+}
 
-  //Function get Response Weather 
-  
-  function getResponseWeather(cityName){
-    var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" +cityName+ "&appid=" + key; 
+function updateCityList(currentCityName) {  //saves the city list to local storage
+    cityList.indexOf(currentCityName) === -1 ? cityList.push(currentCityName) : console.log("City already on list")
+    localStorage.setItem("cityList", JSON.stringify(cityList)); //saves cityList
+    showCityList(cityList);
+}
 
-   
-    $("#today-weather").empty();
-    $.ajax({
-      url: queryURL,
-      method: "GET"
-    }).then(function(response) {
-        
-      // Create a new table row element
-      cityTitle = $("<h3>").text(response.name + " "+ FormatDay());
-      $("#today-weather").append(cityTitle);
-      var TempetureToNum = parseInt((response.main.temp)* 9/5 - 459);
-      var cityTemperature = $("<p>").text("Tempeture: "+ TempetureToNum + " °F");
-      $("#today-weather").append(cityTemperature);
-      var cityHumidity = $("<p>").text("Humidity: "+ response.main.humidity + " %");
-      $("#today-weather").append(cityHumidity);
-      var cityWindSpeed = $("<p>").text("Wind Speed: "+ response.wind.speed + " MPH");
-      $("#today-weather").append(cityWindSpeed);
-      var CoordLon = response.coord.lon;
-      var CoordLat = response.coord.lat;
-    
-       
-       
-        //Api to get 5-day forecast  
-        var queryURL3 = "https://api.openweathermap.org/data/2.5/forecast?q=" + cityName + "&appid=" + key;
-            $.ajax({
-            url: queryURL3,
-            method: "GET"
-        }).then(function(response5day) { 
-            $("#boxes").empty();
-            console.log(response5day);
-            for(var i=0, j=0; j<=5; i=i+6){
-                var read_date = response5day.list[i].dt;
-                if(response5day.list[i].dt != response5day.list[i+1].dt){
-                    var FivedayDiv = $("<div>");
-                    FivedayDiv.attr("class","col-3 m-2 bg-primary")
-                    var d = new Date(0); // The 0 there is the key, which sets the date to the epoch
-                    d.setUTCSeconds(read_date);
-                    var date = d;
-                    console.log(date);
-                    var month = date.getMonth()+1;
-                    var day = date.getDate();
-                    var dayOutput = date.getFullYear() + '/' +
-                    (month<10 ? '0' : '') + month + '/' +
-                    (day<10 ? '0' : '') + day;
-                    var Fivedayh4 = $("<h6>").text(dayOutput);
-                    //Set src to the imags
-                    var imgtag = $("<img>");
-                    var skyconditions = response5day.list[i].weather[0].main;
-                    if(skyconditions==="Clouds"){
-                        imgtag.attr("src", "https://img.icons8.com/color/48/000000/cloud.png")
-                    } else if(skyconditions==="Clear"){
-                        imgtag.attr("src", "https://img.icons8.com/color/48/000000/summer.png")
-                    }else if(skyconditions==="Rain"){
-                        imgtag.attr("src", "https://img.icons8.com/color/48/000000/rain.png")
-                    }
-
-                    var pTemperatureK = response5day.list[i].main.temp;
-                    console.log(skyconditions);
-                    var TempetureToNum = parseInt((pTemperatureK)* 9/5 - 459);
-                    var pTemperature = $("<p>").text("Tempeture: "+ TempetureToNum + " °F");
-                    var pHumidity = $("<p>").text("Humidity: "+ response5day.list[i].main.humidity + " %");
-                    FivedayDiv.append(Fivedayh4);
-                    FivedayDiv.append(imgtag);
-                    FivedayDiv.append(pTemperature);
-                    FivedayDiv.append(pHumidity);
-                    $("#boxes").append(FivedayDiv);
-                    console.log(response5day);
-                    j++;
-                }
-            
+function searchApi2(varLat, varLon, currentCityName) {  //have to search onecal API to get 5 day forcast 
+    var locQueryUrl = `https://api.openweathermap.org/data/2.5/onecall?lat=`+varLat+`&lon=`+varLon+`&exclude=hourly&units=imperial&appid=23b89ccd37ecfa0524d0c35eae3690f8`;
+    fetch(locQueryUrl)
+      .then(function (response) {
+        console.log(response)
+        if (!response.ok) {
+          throw response.json();
         }
-      
-    });
-      
-
-    });
-    
+        console.log(response.json)
+        return response.json();
+      })
+      .then(function (locRes) {
+        console.log(locRes);
+        weather = [];
+        updateCityList(currentCityName);
+        for (var i = 0; i < 7; i++) {
+             var wDay = {
+                 "date":locRes.daily[i].dt,
+                 "temp":locRes.daily[i].temp.day+` °F`,
+                 "hum":locRes.daily[i].humidity+`%`,
+                 "wind":locRes.daily[i].wind_speed+` MPH`,
+                 "UV":locRes.daily[i].uvi,
+                 "icon":`https://openweathermap.org/img/wn/`+locRes.daily[i].weather[0].icon+`.png`
+             }
+        wDay.date=wDay.date * 1000;
+        const dateObject = new Date(wDay.date);
+        wDay.date=dateObject.toLocaleDateString();
+        weather.push(wDay);
+        }   
+        displayWeather(weather);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
   }
 
-  //Click function to each Li 
-  $(document).on("click", "#listC", function() {
-    var thisCity = $(this).attr("data-city");
-    getResponseWeather(thisCity);
-  });
+function searchApi(query) {
+    var locQueryUrl = `https://api.openweathermap.org/data/2.5/forecast?q=`+query+`&appid=23b89ccd37ecfa0524d0c35eae3690f8`;
+ 
+    fetch(locQueryUrl)
+      .then(function (response) {
+        console.log(response);
+        if (!response.ok) {
+          $("#search-input")[0].reset()
+          alert("ERROR: City not found");
+          throw response.json();
+        }
+        console.log(response.json);
+        return response.json();
+      })
+      .then(function (locRes) {
+        varLat = locRes.city.coord.lat;
+        varLon = locRes.city.coord.lon;
+        currentCityName = query;
+        console.log(currentCityName + ` located at:`+varLat+`x`+ varLon);
+        searchApi2(varLat, varLon, currentCityName);
+    })
+      .catch(function (error) {
+        console.error(error);
+      });
+}
+
+function handleSearchFormSubmit(event) {
+    event.preventDefault();
+    var searchInputVal = document.querySelector('#search-input').value;
+    if (!searchInputVal) {
+      console.error('You need a search input value!');
+      return;
+    }
+    searchApi(searchInputVal);
+  }
+
+function loadCityList(cityList) {  //function to load the text from memory
+    cityList = JSON.parse(localStorage.getItem("cityList"));
+    if(!cityList) {  //check to see if the variable exists
+        console.log("- No saved information"); //prints error message in console
+        cityList=[];
+        return cityList;
+    }
+    return cityList;
+}
+searchFormEl.addEventListener('submit', handleSearchFormSubmit);
+
+cityList = loadCityList(cityList);
+searchApi("Seattle");
