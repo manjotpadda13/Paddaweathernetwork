@@ -23,7 +23,7 @@ init();
 //Function init();
 function init(){
     //Get stored cities from localStorage
-    //Parsing the JSON string to an object
+   
     var storedCities = JSON.parse(localStorage.getItem("cities"));
 
     // If cities were retrieved from localStorage, update the cities array to it
@@ -92,7 +92,7 @@ function renderCities() {
   function getResponseWeather(cityName){
     var queryURL = "https://api.openweathermap.org/data/2.5/weather?q=" +cityName+ "&appid=" + key; 
 
-    // The content of today-weather
+   
     $("#today-weather").empty();
     $.ajax({
       url: queryURL,
