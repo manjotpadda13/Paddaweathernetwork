@@ -41,12 +41,15 @@ The following image shows the web application's appearance and functionality:
 
 ## Functionality Screenshot
 
-
-
+<img width="1369" alt="Screen Shot 2023-11-04 at 6 41 09 PM" src="https://github.com/manjotpadda13/Paddaweathernetwork/assets/79305241/b416bd84-94d7-476f-b98a-27abb874aa09">
 
 
 
 ## Usage
+- When appliction opens appears the weather dashboard, default city Seattle 
+- Continue to enter desired city of which weather you would like to see
+- When press search, shower weather,temp,humidity, wind speed, and UV index
+- May continue to search any city weather details
 
 
 
